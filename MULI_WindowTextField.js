@@ -4,9 +4,9 @@
 
 /*:
  * @target MV MZ
- * @plugindesc
+ * @plugindesc 仿原生文字框輸入，運用透明<input>
  * @author moonyoulove
- * @url
+ * @url https://github.com/moonyoulove/RPGMakerPlugins/blob/main/MULI_WindowTextField.js
  *
  * @help
  * 插件命令:
