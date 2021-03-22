@@ -643,6 +643,7 @@ Scene_NameKeyboard.prototype.start = function() {
         this._textField.className = "textField";
         this._textField.dataset.fontScale = "1";
         this._textField.dataset.prePress = String(Input.isPressed("ok"));
+        this._textField.style.textAlign = TextField.textAlign;
         this._textField.addEventListener("blur", this._onTextFieldLostFocus.bind(this));
         this._textField.addEventListener("keydown", this._onTextFieldKeyDown.bind(this));
         this._textField.addEventListener("input", this._onTextFieldInput.bind(this));
@@ -721,7 +722,6 @@ Scene_NameKeyboard.prototype.start = function() {
         this._textField.style.height = Graphics.unit(rect.height);
         this._textField.style.caretColor = this.contents.textColor;
         this._textField.style.fontFamily = this.contents.fontFace;
-        this._textField.style.textAlign = TextField.textAlign;
         this.updateTextFieldFontSize();
         const color = TextField.selectionColor || this.cursorColor();
         this._textField.style.setProperty("--textField-selection-color", color);
