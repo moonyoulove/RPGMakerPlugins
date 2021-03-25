@@ -951,8 +951,8 @@ Scene_NameKeyboard.prototype.start = function() {
     };
 
     const _Game_Interpreter_command101 = Game_Interpreter.prototype.command101;
-    Game_Interpreter.prototype.command101 = function() {
-        _Game_Interpreter_command101.call(this);
+    Game_Interpreter.prototype.command101 = function(params) {
+        _Game_Interpreter_command101.call(this, params);
         const nextCommnad = this._list[this._index];
         if (nextCommnad && nextCommnad.code === 356) {
             const args = nextCommnad.parameters[0].split(" ");
