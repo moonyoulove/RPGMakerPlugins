@@ -112,6 +112,7 @@
  * @default TextFieldButton
  * @type file
  * @dir img/system
+ * @require 1
  * 
  * @param buttonHeight
  * @parent button
