@@ -580,7 +580,7 @@ Scene_NameKeyboard.prototype.start = function() {
         });
     } else {
         PluginManager.registerCommand(TextField.pluginName, "input", function(args) {
-            TextField.commands.input.call(this, Number(args.maxLength), Number(args.variableId), Boolean(args.allowEmpty), Boolean(args.allowCancel));
+            TextField.commands.input.call(this, Number(args.maxLength), Number(args.variableId), args.allowEmpty === "true", args.allowCancel === "true");
         });
 
         Window_Base.prototype.canvasToLocalX = function(x) {
@@ -959,7 +959,7 @@ Scene_NameKeyboard.prototype.start = function() {
             const args = nextCommnad.parameters[0].split(" ");
             if (args[0] === "TextField" && args[1] === "input") {
                 this._index++;
-                $gameMessage.setTextField(Number(args[2]), Number(args[3]), Boolean(args[4]), Boolean(args[5]));
+                $gameMessage.setTextField(Number(args[2]), Number(args[3]), args[4] === "true", args[5] === "true");
             }
         }
         return false;
