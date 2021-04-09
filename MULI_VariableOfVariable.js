@@ -99,7 +99,7 @@ MULI.Variable2.commands = {
     Game_Interpreter.prototype.command121 = function(params) {
         // @rmmz
         params = params || this._params;
-        this.convertVariableParams(params, [0, 1]);
+        this.convertVariableParams(params, [0, 1], []);
         _Game_Interpreter_command121.call(this, params);
         this.restoreParameters(params);
         return true;
