@@ -11,7 +11,10 @@
  * @help
  * 插件命令:
  * TextField input 5 1 true true // 參數依序為最大字數、變量ID、
- * 允許空白和允許取消
+ * 允許空白和允許取消，變量的內容會做為預設文字。
+ * 
+ * 名稱輸入處理指令，會判斷最近一次的輸入操作是鼠標鍵盤還是搖桿，
+ * 來啟用與禁用鍵盤輸入，原本的字符表也會隨之禁用或啟用。
  * 
  * @command input
  * @text 輸入文字
@@ -196,6 +199,16 @@
  * @option 靠右
  * @value  right
  * 
+ * @param nameEdit
+ * @text -----更改名字-----
+ *
+ * @param hideTable
+ * @parent nameEdit
+ * @text 隱藏字符輸入表
+ * @desc 最後操作裝置非搖桿時，將字符表隱藏
+ * @default false
+ * @type boolean
+ * 
  * @base_
  * @orderAfter
  * @orderBefore
@@ -217,7 +230,7 @@
  * @type string
  */
 
-class TextField {}
+class TextField { }
 
 TextField.pluginName = "MULI_WindowTextField";
 TextField.parameters = PluginManager.parameters("MULI_WindowTextField");
@@ -242,6 +255,7 @@ TextField.buttonCancelX = Number(TextField.parameters.buttonCancelX);
 TextField.buttonCancelWidth = Number(TextField.parameters.buttonCancelWidth);
 TextField.buttonOkX = Number(TextField.parameters.buttonOkX);
 TextField.buttonOkWidth = Number(TextField.parameters.buttonOkWidth);
+TextField.hideTable = TextField.parameters.hideTable === "true";
 
 if (Utils.RPGMAKER_NAME === "MV") {
     function Window_StatusBase() {
@@ -251,7 +265,7 @@ if (Utils.RPGMAKER_NAME === "MV") {
     Window_StatusBase.prototype = Object.create(Window_Selectable.prototype);
     Window_StatusBase.prototype.constructor = Window_StatusBase;
 
-    Window_StatusBase.prototype.initialize = function(x, y, width, height) {
+    Window_StatusBase.prototype.initialize = function (x, y, width, height) {
         Window_Selectable.prototype.initialize.call(this, x, y, width, height);
     };
 }
@@ -263,7 +277,7 @@ function Window_TextField() {
 Window_TextField.prototype = Object.create(Window_StatusBase.prototype);
 Window_TextField.prototype.constructor = Window_TextField;
 
-Window_TextField.prototype.initialize = function(messageWindow) {
+Window_TextField.prototype.initialize = function (messageWindow) {
     this._messageWindow = messageWindow;
     const args = Utils.RPGMAKER_NAME === "MV" ? [0, 0, 0, 0] : [new Rectangle()];
     Window_StatusBase.prototype.initialize.apply(this, args);
@@ -273,7 +287,7 @@ Window_TextField.prototype.initialize = function(messageWindow) {
     this.deactivate();
 };
 
-Window_TextField.prototype.start = function() {
+Window_TextField.prototype.start = function () {
     this.setTextFieldMaxLength($gameMessage.textFieldMaxLength());
     this.setTextFieldValue(String($gameVariables.value($gameMessage.textFieldVariableId()) || ""));
     this.updatePlacement();
@@ -286,7 +300,7 @@ Window_TextField.prototype.start = function() {
     this.activate();
 };
 
-Window_TextField.prototype.refresh = function() {
+Window_TextField.prototype.refresh = function () {
     Window_StatusBase.prototype.refresh.call(this);
     if (this._textField) {
         this.drawTextFieldValue();
@@ -294,7 +308,7 @@ Window_TextField.prototype.refresh = function() {
     }
 };
 
-Window_TextField.prototype.windowWidth = function() {
+Window_TextField.prototype.windowWidth = function () {
     const maxLength = this._textField.maxLength;
     if (maxLength >= 0) {
         const textWidth = this.textWidth("永") * Math.min(maxLength, 5);
@@ -306,11 +320,11 @@ Window_TextField.prototype.windowWidth = function() {
     }
 };
 
-Window_TextField.prototype.windowHeight = function() {
+Window_TextField.prototype.windowHeight = function () {
     return TextField.windowHeight || this.fittingHeight(1);
 };
 
-Window_TextField.prototype.updatePlacement = function() {
+Window_TextField.prototype.updatePlacement = function () {
     const messageY = this._messageWindow.y;
     const spacing = 8;
     this.width = this.windowWidth();
@@ -323,7 +337,7 @@ Window_TextField.prototype.updatePlacement = function() {
     }
 };
 
-Window_TextField.prototype.buttonY = function() {
+Window_TextField.prototype.buttonY = function () {
     const spacing = 8;
     if (this._messageWindow.y >= Graphics.boxHeight / 2) {
         return 0 - this._buttons[0].height - spacing;
@@ -332,7 +346,7 @@ Window_TextField.prototype.buttonY = function() {
     }
 };
 
-Window_TextField.prototype.updateButtonsVisiblity = function() {
+Window_TextField.prototype.updateButtonsVisiblity = function () {
     if (Utils.RPGMAKER_NAME === "MV" ? TouchInput.date > Input.date : ConfigManager.touchUI) {
         this.showButtons();
     } else {
@@ -340,7 +354,7 @@ Window_TextField.prototype.updateButtonsVisiblity = function() {
     }
 };
 
-Window_TextField.prototype.createButtons = function() {
+Window_TextField.prototype.createButtons = function () {
     const bitmap = TextField.buttonImage ? ImageManager.loadSystem(TextField.buttonImage) : null;
     const buttonHeight = TextField.buttonHeight;
     this._buttons = [];
@@ -362,7 +376,7 @@ Window_TextField.prototype.createButtons = function() {
     this._buttons[1].setClickHandler(this.onTextFieldOk.bind(this));
 };
 
-Window_TextField.prototype.placeButtons = function() {
+Window_TextField.prototype.placeButtons = function () {
     const numButtons = this._buttons.length;
     const spacing = 16;
     let totalWidth = -spacing;
@@ -389,27 +403,27 @@ Window_TextField.prototype.placeButtons = function() {
     }
 };
 
-Window_TextField.prototype.showButtons = function() {
+Window_TextField.prototype.showButtons = function () {
     for (let i = 0; i < this._buttons.length; i++) {
         this._buttons[i].visible = true;
     }
 };
 
-Window_TextField.prototype.hideButtons = function() {
+Window_TextField.prototype.hideButtons = function () {
     for (let i = 0; i < this._buttons.length; i++) {
         this._buttons[i].visible = false;
     }
 };
 
-Window_TextField.prototype.isOkEnabled = function() {
+Window_TextField.prototype.isOkEnabled = function () {
     return $gameMessage.textFieldAllowEmpty() ? true : this._textField.value.length > 0;
 };
 
-Window_TextField.prototype.isCancelEnabled = function() {
+Window_TextField.prototype.isCancelEnabled = function () {
     return $gameMessage.textFieldAllowCancel();
 };
 
-Window_TextField.prototype.onTextFieldOk = function() {
+Window_TextField.prototype.onTextFieldOk = function () {
     if (this.isOkEnabled()) {
         this.processOk();
     } else {
@@ -417,7 +431,7 @@ Window_TextField.prototype.onTextFieldOk = function() {
     }
 };
 
-Window_TextField.prototype.onTextFieldCancel = function() {
+Window_TextField.prototype.onTextFieldCancel = function () {
     if (this.isCancelEnabled()) {
         this.processCancel();
     } else {
@@ -425,25 +439,25 @@ Window_TextField.prototype.onTextFieldCancel = function() {
     }
 };
 
-Window_TextField.prototype.processOk = function() {
+Window_TextField.prototype.processOk = function () {
     Window_StatusBase.prototype.processOk.call(this);
     $gameVariables.setValue($gameMessage.textFieldVariableId(), this._textField.value);
     this.end();
 };
 
-Window_TextField.prototype.processCancel = function() {
+Window_TextField.prototype.processCancel = function () {
     Window_StatusBase.prototype.processCancel.call(this);
     this.end();
 };
 
-Window_TextField.prototype.end = function() {
+Window_TextField.prototype.end = function () {
     this.close();
     this.hideButtons();
     this._messageWindow.terminateMessage();
 };
 
 // @rmmz
-Window_TextField.prototype.setMessageWindow = function(messageWindow) {
+Window_TextField.prototype.setMessageWindow = function (messageWindow) {
     this._messageWindow = messageWindow;
 };
 
@@ -454,7 +468,7 @@ function Window_NameTextField() {
 Window_NameTextField.prototype = Object.create(Window_NameEdit.prototype);
 Window_NameTextField.prototype.constructor = Window_NameTextField;
 
-Window_NameTextField.prototype.initialize = function(...args) {
+Window_NameTextField.prototype.initialize = function (...args) {
     Window_NameEdit = TextField.Window_NameEdit || Window_NameEdit;
     // @rmmz mv:[actor, maxLength] mz:[rect]
     Window_NameEdit.prototype.initialize.apply(this, args);
@@ -467,23 +481,23 @@ Window_NameTextField.prototype.initialize = function(...args) {
 };
 
 // @rmmz
-Window_NameTextField.prototype.setup = function(actor, maxLength) {
+Window_NameTextField.prototype.setup = function (actor, maxLength) {
     Window_NameEdit.prototype.setup.call(this, actor, maxLength);
     this.updateTextField();
     this.setTextFieldValue(this._name);
     this.setTextFieldMaxLength(this._maxLength);
 };
 
-Window_NameTextField.prototype.createTextField = function() {
+Window_NameTextField.prototype.createTextField = function () {
     Window_NameEdit.prototype.createTextField.call(this);
     this._textField.style.textAlign = "center";
 };
 
-Window_NameTextField.prototype.setKeyboardInput = function(value) {
+Window_NameTextField.prototype.setKeyboardInput = function (value) {
     this._isKeyboardInput = value;
 };
 
-Window_NameTextField.prototype._onTextFieldKeyDown = function(event) {
+Window_NameTextField.prototype._onTextFieldKeyDown = function (event) {
     if (!this._isKeyboardInput) {
         event.preventDefault();
     } else {
@@ -491,26 +505,26 @@ Window_NameTextField.prototype._onTextFieldKeyDown = function(event) {
     }
 };
 
-Window_NameTextField.prototype.setInputWindow = function(window) {
+Window_NameTextField.prototype.setInputWindow = function (window) {
     this._inputWindow = window;
 };
 
-Window_NameTextField.prototype.onTextFieldOk = function() {
+Window_NameTextField.prototype.onTextFieldOk = function () {
     this._inputWindow.onNameOk();
 };
 
-Window_NameTextField.prototype.textFieldRect = function() {
+Window_NameTextField.prototype.textFieldRect = function () {
     const rect = this.itemRect(0);
     rect.x = this.faceWidth();
     rect.width = this.innerWidth - rect.x;
     return rect;
 };
 
-Window_NameTextField.prototype.drawUnderline = function(index) {};
+Window_NameTextField.prototype.drawUnderline = function (index) { };
 
-Window_NameTextField.prototype.drawChar = function(index) {};
+Window_NameTextField.prototype.drawChar = function (index) { };
 
-Window_NameTextField.prototype.refresh = function() {
+Window_NameTextField.prototype.refresh = function () {
     Window_NameEdit.prototype.refresh.call(this);
     this.setCursorRect(0, 0, 0, 0);
     if (this._textField) {
@@ -519,12 +533,12 @@ Window_NameTextField.prototype.refresh = function() {
     }
 };
 
-Window_NameTextField.prototype._onTextFieldInput = function(event) {
+Window_NameTextField.prototype._onTextFieldInput = function (event) {
     Window_NameEdit.prototype._onTextFieldInput.call(this, event);
     this._name = this._textField.value;
 };
 
-Window_NameTextField.prototype.restoreDefault = function() {
+Window_NameTextField.prototype.restoreDefault = function () {
     this.setTextFieldValue(this._defaultName);
     Window_NameEdit.prototype.restoreDefault.call(this);
 };
@@ -536,54 +550,64 @@ function Scene_NameKeyboard() {
 Scene_NameKeyboard.prototype = Object.create(Scene_Name.prototype);
 Scene_NameKeyboard.prototype.constructor = Scene_NameKeyboard;
 
-Scene_NameKeyboard.prototype.initialize = function() {
+Scene_NameKeyboard.prototype.initialize = function () {
     Scene_Name.prototype.initialize.call(this);
 };
 
-Scene_NameKeyboard.prototype.createEditWindow = function() {
+Scene_NameKeyboard.prototype.createEditWindow = function () {
     // 替換
-    TextField.Window_NameEdit = Window_NameEdit;
-    Window_NameEdit = Window_NameTextField;
+    const temp = Window_NameEdit;
+    Window_NameEdit = new Proxy(Window_NameEdit, {
+        construct(target, args, newTarget) {
+            return new Window_NameTextField(...args);
+        }
+    });
     Scene_Name.prototype.createEditWindow.call(this);
+    Window_NameEdit = temp;
 };
 
-Scene_NameKeyboard.prototype.createInputWindow = function() {
+Scene_NameKeyboard.prototype.createInputWindow = function () {
     Scene_Name.prototype.createInputWindow.call(this);
     this._editWindow.setInputWindow(this._inputWindow);
 };
 
 
-Scene_NameKeyboard.prototype.start = function() {
+Scene_NameKeyboard.prototype.start = function () {
     Scene_Name.prototype.start.call(this);
     if (Input.gamepadDate > TouchInput.date && Input.gamepadDate >= Input.date) {
         this._editWindow.setKeyboardInput(false);
     } else {
         this._inputWindow.deselect();
         this._inputWindow.deactivate();
+        if (TextField.hideTable) {
+            this._inputWindow.hide();
+            this._editWindow.y = (Graphics.boxHeight - this._editWindow.height) / 2;
+            this._editWindow.updateTextFieldPosition();
+        }
     }
 };
 
 (() => {
     if (Utils.RPGMAKER_NAME === "MV") {
         Object.defineProperty(Window.prototype, "innerWidth", {
-            get: function() {
+            get: function () {
                 return Math.max(0, this._width - this._padding * 2);
             },
             configurable: true
         });
 
         Object.defineProperty(Window.prototype, "innerHeight", {
-            get: function() {
+            get: function () {
                 return Math.max(0, this._height - this._padding * 2);
             },
             configurable: true
         });
     } else {
-        PluginManager.registerCommand(TextField.pluginName, "input", function(args) {
+        PluginManager.registerCommand(TextField.pluginName, "input", function (args) {
             TextField.commands.input.call(this, Number(args.maxLength), Number(args.variableId), args.allowEmpty === "true", args.allowCancel === "true");
         });
 
-        Window_Base.prototype.canvasToLocalX = function(x) {
+        Window_Base.prototype.canvasToLocalX = function (x) {
             var node = this;
             while (node) {
                 x -= node.x;
@@ -592,7 +616,7 @@ Scene_NameKeyboard.prototype.start = function() {
             return x;
         };
 
-        Window_Base.prototype.canvasToLocalY = function(y) {
+        Window_Base.prototype.canvasToLocalY = function (y) {
             var node = this;
             while (node) {
                 y -= node.y;
@@ -602,18 +626,18 @@ Scene_NameKeyboard.prototype.start = function() {
         };
 
         const _Scene_Message_createAllWindows = Scene_Message.prototype.createAllWindows;
-        Scene_Message.prototype.createAllWindows = function() {
+        Scene_Message.prototype.createAllWindows = function () {
             this.createTextFieldWindow();
             _Scene_Message_createAllWindows.call(this);
         };
 
-        Scene_Message.prototype.createTextFieldWindow = function() {
+        Scene_Message.prototype.createTextFieldWindow = function () {
             this._textFieldWindow = new Window_TextField();
             this.addWindow(this._textFieldWindow);
         };
 
         const _Scene_Message_associateWindows = Scene_Message.prototype.associateWindows;
-        Scene_Message.prototype.associateWindows = function() {
+        Scene_Message.prototype.associateWindows = function () {
             _Scene_Message_associateWindows.call(this);
             const messageWindow = this._messageWindow;
             messageWindow.setTextFieldWindow(this._textFieldWindow);
@@ -622,7 +646,7 @@ Scene_NameKeyboard.prototype.start = function() {
     }
 
     const _Scene_Base_terminate = Scene_Base.prototype.terminate;
-    Scene_Base.prototype.terminate = function() {
+    Scene_Base.prototype.terminate = function () {
         _Scene_Base_terminate.call(this);
         if (this._windowLayer) {
             // @rmmz mz的windowlayer沒有removeChildren
@@ -631,14 +655,14 @@ Scene_NameKeyboard.prototype.start = function() {
     };
 
     // 要使用文字框時必須
-    Window_Base.prototype.createTextField = function() {
+    Window_Base.prototype.createTextField = function () {
         this.on("added", this._onAdded, this);
         this.on("removed", this._onRemoved, this);
         this.createTextFieldElement();
         this.updateTextField();
     }
 
-    Window_Base.prototype.createTextFieldElement = function() {
+    Window_Base.prototype.createTextFieldElement = function () {
         this._textField = document.createElement("input");
         this._textField.tabIndex = -1;
         this._textField.className = "textField";
@@ -654,7 +678,7 @@ Scene_NameKeyboard.prototype.start = function() {
         this._textField.addEventListener("keyup", this._onTextFieldKeyUp.bind(this));
     };
 
-    Window_Base.prototype._onAdded = function() {
+    Window_Base.prototype._onAdded = function () {
         document.body.appendChild(this._textField);
         Graphics.addTextFieldWindow(this);
         if (this.active) {
@@ -663,32 +687,34 @@ Scene_NameKeyboard.prototype.start = function() {
         this.updateTextFieldPosition();
     };
 
-    Window_Base.prototype._onRemoved = function() {
+    Window_Base.prototype._onRemoved = function () {
         this._textField.disabled = true;
         document.body.removeChild(this._textField);
         Graphics.deleteTextFieldWindow(this);
     };
 
-    Window_Base.prototype._onTextFieldLostFocus = function(event) {
+    Window_Base.prototype._onTextFieldLostFocus = function (event) {
         this._textField.focus();
     };
 
-    Window_Base.prototype._onTextFieldKeyDown = function(event) {
-        event.stopPropagation();
+    Window_Base.prototype._onTextFieldKeyDown = function (event) {
+        if (!event.code.match(/F\d+/)) {
+            event.stopPropagation();
+        }
         if (this._textField.dataset.composing === "true") {
             this._textField.dataset.composed = "true";
         }
     };
 
-    Window_Base.prototype._onTextFieldCompositionStart = function(event) {
+    Window_Base.prototype._onTextFieldCompositionStart = function (event) {
         this._textField.dataset.composing = "true";
     };
 
-    Window_Base.prototype._onTextFieldCompositionEnd = function(event) {
+    Window_Base.prototype._onTextFieldCompositionEnd = function (event) {
         this._textField.dataset.composing = "false";
     };
 
-    Window_Base.prototype._onTextFieldKeyUp = function(event) {
+    Window_Base.prototype._onTextFieldKeyUp = function (event) {
         const dataset = this._textField.dataset;
         if (this.active && dataset.prePress !== "true" && dataset.composing !== "true" && dataset.composed !== "true") {
             switch (event.code) {
@@ -704,19 +730,19 @@ Scene_NameKeyboard.prototype.start = function() {
         dataset.prePress = "false";
     };
 
-    Window_Base.prototype.onTextFieldOk = function() {
+    Window_Base.prototype.onTextFieldOk = function () {
         // override
     };
 
-    Window_Base.prototype.onTextFieldCancel = function() {
+    Window_Base.prototype.onTextFieldCancel = function () {
         // override
     };
 
-    Window_Base.prototype._onTextFieldRightClick = function(event) {
+    Window_Base.prototype._onTextFieldRightClick = function (event) {
         event.preventDefault();
     };
 
-    Window_Base.prototype.updateTextField = function() {
+    Window_Base.prototype.updateTextField = function () {
         this.updateTextFieldPosition();
         const rect = this.textFieldRect();
         this._textField.style.width = Graphics.unit(rect.width);
@@ -728,7 +754,7 @@ Scene_NameKeyboard.prototype.start = function() {
         this._textField.style.setProperty("--textField-selection-color", color);
     };
 
-    Window_Base.prototype._onTextFieldInput = function(event) {
+    Window_Base.prototype._onTextFieldInput = function (event) {
         const width = this.textWidth(this._textField.value);
         const maxWidth = this.textFieldRect().width;
         this._textField.dataset.fontScale = String(width > maxWidth ? maxWidth / width : 1);
@@ -736,12 +762,12 @@ Scene_NameKeyboard.prototype.start = function() {
         this.refresh();
     };
 
-    Window_Base.prototype.updateTextFieldFontSize = function() {
+    Window_Base.prototype.updateTextFieldFontSize = function () {
         this._textField.style.fontSize = Graphics.unit(this.contents.fontSize * Number(this._textField.dataset.fontScale));
     };
 
     const _Window_Base_move = Window_Base.prototype.move;
-    Window_Base.prototype.move = function(x, y, width, height) {
+    Window_Base.prototype.move = function (x, y, width, height) {
         width = width || this._width;
         height = height || this._height;
         let needsUpdate = false;
@@ -755,12 +781,12 @@ Scene_NameKeyboard.prototype.start = function() {
     };
 
     const _Window_Base__refreshAllPart = Window_Base.prototype._refreshAllPart;
-    Window_Base.prototype._refreshAllPart = function() {
+    Window_Base.prototype._refreshAllPart = function () {
         _Window_Base__refreshAllPart.call(this);
         this.updateElement();
     };
 
-    Window_Base.prototype.updateTextFieldPosition = function() {
+    Window_Base.prototype.updateTextFieldPosition = function () {
         if (this._textField) {
             const rect = this.textFieldRect();
             this._textField.style.left = Graphics.unit(this.padding + rect.x - this.canvasToLocalX(Graphics.pageToCanvasX(0)));
@@ -768,42 +794,42 @@ Scene_NameKeyboard.prototype.start = function() {
         }
     };
 
-    Window_Base.prototype.updateTextFieldVisibility = function() {
+    Window_Base.prototype.updateTextFieldVisibility = function () {
         if (this._textField) {
             this._textField.style.visibility = (this.visible && (this.isOpen() || this.isOpening()) && !this.isClosing()) ? "visible" : "hidden";
         }
     };
 
-    Window_Base.prototype.hideTextField = function() {
+    Window_Base.prototype.hideTextField = function () {
         this._textField.style.visibility = "hidden";
     };
 
     const _Window_Base_open = Window_Base.prototype.open;
-    Window_Base.prototype.open = function() {
+    Window_Base.prototype.open = function () {
         _Window_Base_open.call(this);
         this.updateTextFieldVisibility();
     };
 
     const _Window_Base_close = Window_Base.prototype.close;
-    Window_Base.prototype.close = function() {
+    Window_Base.prototype.close = function () {
         _Window_Base_close.call(this);
         this.updateTextFieldVisibility();
     };
 
     const _Window_Base_show = Window_Base.prototype.show;
-    Window_Base.prototype.show = function() {
+    Window_Base.prototype.show = function () {
         _Window_Base_show.call(this);
         this.updateTextFieldVisibility();
     };
 
     const _Window_Base_hide = Window_Base.prototype.hide;
-    Window_Base.prototype.hide = function() {
+    Window_Base.prototype.hide = function () {
         _Window_Base_hide.call(this);
         this.updateTextFieldVisibility();
     };
 
     const _Window_Base_activate = Window_Base.prototype.activate;
-    Window_Base.prototype.activate = function() {
+    Window_Base.prototype.activate = function () {
         _Window_Base_activate.call(this);
         if (this._textField) {
             this._textField.disabled = false;
@@ -813,7 +839,7 @@ Scene_NameKeyboard.prototype.start = function() {
     };
 
     const _Window_Base_deactivate = Window_Base.prototype.deactivate;
-    Window_Base.prototype.deactivate = function() {
+    Window_Base.prototype.deactivate = function () {
         _Window_Base_deactivate.call(this);
         if (this._textField) {
             this._textField.setSelectionRange(-1, -1);
@@ -821,7 +847,7 @@ Scene_NameKeyboard.prototype.start = function() {
         }
     };
 
-    Window_Base.prototype.textFieldRect = function() {
+    Window_Base.prototype.textFieldRect = function () {
         const x = 0;
         const height = this.lineHeight();
         let y = 0;
@@ -843,7 +869,7 @@ Scene_NameKeyboard.prototype.start = function() {
         return new Rectangle(x, y, width, height);
     };
 
-    Window_Base.prototype.setTextFieldMaxLength = function(length) {
+    Window_Base.prototype.setTextFieldMaxLength = function (length) {
         if (length >= 0) {
             this._textField.maxLength = length;
         } else {
@@ -851,11 +877,11 @@ Scene_NameKeyboard.prototype.start = function() {
         }
     };
 
-    Window_Base.prototype.setTextFieldValue = function(value) {
+    Window_Base.prototype.setTextFieldValue = function (value) {
         this._textField.value = value;
     };
 
-    Window_Base.prototype.drawTextFieldValue = function() {
+    Window_Base.prototype.drawTextFieldValue = function () {
         const temp = this.contents.fontSize;
         this.contents.fontSize *= Number(this._textField.dataset.fontScale);
         const { x, y, width } = this.textFieldRect();
@@ -863,7 +889,7 @@ Scene_NameKeyboard.prototype.start = function() {
         this.contents.fontSize = temp;
     };
 
-    Window_Base.prototype.drawTextFieldLength = function() {
+    Window_Base.prototype.drawTextFieldLength = function () {
         if (this._textField.maxLength > 0) {
             const text = this._textField.value.length + "/" + this._textField.maxLength;
             const x = 0;
@@ -873,17 +899,24 @@ Scene_NameKeyboard.prototype.start = function() {
         }
     };
 
-    Window_Base.prototype.cursorColor = function() {
+    Window_Base.prototype.cursorColor = function () {
         return this.windowskin.getPixel(112, 112);
     };
 
+    const _Window_NameInput_refresh = Window_NameInput.prototype.refresh;
+    Window_NameInput.prototype.refresh = function () {
+        this.changePaintOpacity(this.active);
+        _Window_NameInput_refresh.call(this);
+        this.changePaintOpacity(true);
+    };
+
     const _Window_Message_isAnySubWindowActive = Window_Message.prototype.isAnySubWindowActive;
-    Window_Message.prototype.isAnySubWindowActive = function() {
+    Window_Message.prototype.isAnySubWindowActive = function () {
         return this._textFieldWindow.active || _Window_Message_isAnySubWindowActive.call(this);
     };
 
     const _Window_Message_startInput = Window_Message.prototype.startInput;
-    Window_Message.prototype.startInput = function() {
+    Window_Message.prototype.startInput = function () {
         if (_Window_Message_startInput.call(this)) {
             return true;
         } else if ($gameMessage.isTextField()) {
@@ -895,23 +928,23 @@ Scene_NameKeyboard.prototype.start = function() {
     };
 
     const _Window_Message_subWindows = Window_Message.prototype.subWindows;
-    Window_Message.prototype.subWindows = function() {
+    Window_Message.prototype.subWindows = function () {
         return _Window_Message_subWindows.call(this).concat([this._textFieldWindow]);
     };
 
     const _Window_Message_createSubWindows = Window_Message.prototype.createSubWindows;
-    Window_Message.prototype.createSubWindows = function() {
+    Window_Message.prototype.createSubWindows = function () {
         _Window_Message_createSubWindows.call(this);
         this._textFieldWindow = new Window_TextField(this);
     };
 
     // @rmmz
-    Window_Message.prototype.setTextFieldWindow = function(textFieldWindow) {
+    Window_Message.prototype.setTextFieldWindow = function (textFieldWindow) {
         this._textFieldWindow = textFieldWindow;
     };
 
     const _Game_Message_clear = Game_Message.prototype.clear;
-    Game_Message.prototype.clear = function() {
+    Game_Message.prototype.clear = function () {
         _Game_Message_clear.call(this);
         this._textFieldMaxLength = -1;
         this._textFieldVariableId = 0;
@@ -919,54 +952,60 @@ Scene_NameKeyboard.prototype.start = function() {
         this._textFieldAllowCancel = false;
     };
 
-    Game_Message.prototype.textFieldMaxLength = function() {
+    Game_Message.prototype.textFieldMaxLength = function () {
         return this._textFieldMaxLength;
     };
 
-    Game_Message.prototype.textFieldVariableId = function() {
+    Game_Message.prototype.textFieldVariableId = function () {
         return this._textFieldVariableId;
     };
 
-    Game_Message.prototype.textFieldAllowEmpty = function() {
+    Game_Message.prototype.textFieldAllowEmpty = function () {
         return this._textFieldAllowEmpty;
     };
 
-    Game_Message.prototype.textFieldAllowCancel = function() {
+    Game_Message.prototype.textFieldAllowCancel = function () {
         return this._textFieldAllowCancel;
     };
 
-    Game_Message.prototype.setTextField = function(maxLength, variableId, allowEmpty, allowCancel) {
+    Game_Message.prototype.setTextField = function (maxLength, variableId, allowEmpty, allowCancel) {
         this._textFieldMaxLength = maxLength;
         this._textFieldVariableId = variableId;
         this._textFieldAllowEmpty = allowEmpty;
         this._textFieldAllowCancel = allowCancel;
     };
 
-    Game_Message.prototype.isTextField = function() {
+    Game_Message.prototype.isTextField = function () {
         return this._textFieldVariableId > 0;
     };
 
     const _Game_Message_isBusy = Game_Message.prototype.isBusy;
-    Game_Message.prototype.isBusy = function() {
+    Game_Message.prototype.isBusy = function () {
         return this.isTextField() || _Game_Message_isBusy.call(this);
     };
 
     const _Game_Interpreter_command101 = Game_Interpreter.prototype.command101;
-    Game_Interpreter.prototype.command101 = function(params) {
-        _Game_Interpreter_command101.call(this, params);
-        const nextCommnad = this._list[this._index];
-        if (nextCommnad && nextCommnad.code === 356) {
-            const args = nextCommnad.parameters[0].split(" ");
-            if (args[0] === "TextField" && args[1] === "input") {
-                this._index++;
-                $gameMessage.setTextField(Number(args[2]), Number(args[3]), args[4] === "true", args[5] === "true");
+    Game_Interpreter.prototype.command101 = function (params) {
+        const isBusy = $gameMessage.isBusy();
+        const result = _Game_Interpreter_command101.call(this, params);
+        if (!isBusy) {
+            const nextCommnad = this._list[this._index];
+            if (nextCommnad && nextCommnad.code === 356) {
+                const args = nextCommnad.parameters[0].split(" ");
+                if (args[0] === "TextField" && args[1] === "input") {
+                    this._index++;
+                    $gameMessage.setTextField(Number(args[2]), Number(args[3]), args[4] === "true", args[5] === "true");
+                }
+            }
+            if (Utils.RPGMAKER_NAME === "MZ" && result) {
+                return true;
             }
         }
         return false;
     };
 
     const _Game_Interpreter_pluginCommand = Game_Interpreter.prototype.pluginCommand;
-    Game_Interpreter.prototype.pluginCommand = function(command, args) {
+    Game_Interpreter.prototype.pluginCommand = function (command, args) {
         _Game_Interpreter_pluginCommand.call(this, command, args);
         if (command === "TextField") {
             switch (args[0]) {
@@ -978,7 +1017,7 @@ Scene_NameKeyboard.prototype.start = function() {
     };
 
     const _SceneManager_push = SceneManager.push;
-    SceneManager.push = function(sceneClass) {
+    SceneManager.push = function (sceneClass) {
         if (sceneClass === Scene_Name) {
             sceneClass = Scene_NameKeyboard;
         }
@@ -986,32 +1025,32 @@ Scene_NameKeyboard.prototype.start = function() {
     };
 
     const _SceneManager_catchException = SceneManager.catchException;
-    SceneManager.catchException = function(e) {
+    SceneManager.catchException = function (e) {
         _SceneManager_catchException.call(this, e);
         Graphics.hideAllTextField();
     };
 
-    Graphics.hideAllTextField = function() {
+    Graphics.hideAllTextField = function () {
         this._textFieldWindows.forEach(window => window.hideTextField());
     };
 
-    Graphics.hideElement = function(element) {
+    Graphics.hideElement = function (element) {
         // 不需要使用時隱藏，避免阻擋文字框的滑鼠操作
         element.style.visibility = "hidden";
     };
 
-    Graphics.showElement = function(element) {
+    Graphics.showElement = function (element) {
         element.style.visibility = "visible";
     };
 
     const _Graphics__createErrorPrinter = Graphics._createErrorPrinter;
-    Graphics._createErrorPrinter = function() {
+    Graphics._createErrorPrinter = function () {
         _Graphics__createErrorPrinter.call(this);
         this.hideElement(this._errorPrinter);
     };
 
     const _Graphics_printLoadingError = Graphics.printLoadingError;
-    Graphics.printLoadingError = function(url) {
+    Graphics.printLoadingError = function (url) {
         _Graphics_printLoadingError.call(this, url);
         if (this._errorPrinter && !this._errorShowed) {
             this.showElement(this._errorPrinter);
@@ -1019,7 +1058,7 @@ Scene_NameKeyboard.prototype.start = function() {
     };
 
     const _Graphics_printError = Graphics.printError;
-    Graphics.printError = function(name, message) {
+    Graphics.printError = function (name, message) {
         _Graphics_printError.call(this, name, message);
         if (this._errorPrinter) {
             this.showElement(this._errorPrinter);
@@ -1027,7 +1066,7 @@ Scene_NameKeyboard.prototype.start = function() {
     };
 
     const _Graphics_eraseLoadingError = Graphics.eraseLoadingError;
-    Graphics.eraseLoadingError = function() {
+    Graphics.eraseLoadingError = function () {
         _Graphics_eraseLoadingError.call(this);
         if (this._errorPrinter && !this._errorShowed) {
             this.hideElement(this._errorPrinter);
@@ -1035,7 +1074,7 @@ Scene_NameKeyboard.prototype.start = function() {
     };
 
     const _Graphics_showFps = Graphics.showFps;
-    Graphics.showFps = function() {
+    Graphics.showFps = function () {
         _Graphics_showFps.call(this);
         if (this._fpsMeter) {
             this.showElement(this._modeBox);
@@ -1043,7 +1082,7 @@ Scene_NameKeyboard.prototype.start = function() {
     };
 
     const _Graphics_hideFps = Graphics.hideFps;
-    Graphics.hideFps = function() {
+    Graphics.hideFps = function () {
         _Graphics_hideFps.call(this);
         if (this._fpsMeter) {
             this.hideElement(this._modeBox);
@@ -1051,38 +1090,38 @@ Scene_NameKeyboard.prototype.start = function() {
     };
 
     const _Graphics__createModeBox = Graphics._createModeBox;
-    Graphics._createModeBox = function() {
+    Graphics._createModeBox = function () {
         _Graphics__createModeBox.call(this);
         this.hideElement(this._modeBox);
     };
 
     const Graphics_initialize = Graphics.initialize;
-    Graphics.initialize = function(width, height, type) {
+    Graphics.initialize = function (width, height, type) {
         Graphics_initialize.call(this, width, height, type);
         this._textFieldWindows = new Set();
         return !!this._app;
     };
 
     const _Graphics__updateAllElements = Graphics._updateAllElements;
-    Graphics._updateAllElements = function() {
+    Graphics._updateAllElements = function () {
         _Graphics__updateAllElements.call(this);
         this._textFieldWindows.forEach(window => window.updateTextField());
     };
 
-    Graphics.addTextFieldWindow = function(window) {
+    Graphics.addTextFieldWindow = function (window) {
         this._textFieldWindows.add(window);
     };
 
-    Graphics.deleteTextFieldWindow = function(window) {
+    Graphics.deleteTextFieldWindow = function (window) {
         this._textFieldWindows.delete(window);
     };
 
-    Graphics.unit = function(value) {
+    Graphics.unit = function (value) {
         return value * this._realScale + "px";
     };
 
     const _Input__updateGamepadState = Input._updateGamepadState;
-    Input._updateGamepadState = function(gamepad) {
+    Input._updateGamepadState = function (gamepad) {
         const lastState = this._gamepadStates[gamepad.index] || [];
         _Input__updateGamepadState.call(this, gamepad);
         const changed = this._gamepadStates[gamepad.index].some((state, i) => state !== lastState[i]);
@@ -1092,14 +1131,14 @@ Scene_NameKeyboard.prototype.start = function() {
     };
 
     Object.defineProperty(Input, "gamepadDate", {
-        get: function() {
+        get: function () {
             return this._gamepadDate;
         },
         configurable: true
     });
 
     const _Input_clear = Input.clear;
-    Input.clear = function() {
+    Input.clear = function () {
         _Input_clear.call(this);
         this._gamepadDate = 0;
     };
