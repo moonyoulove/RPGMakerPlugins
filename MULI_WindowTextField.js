@@ -419,6 +419,10 @@ Window_TextField.prototype.isOkEnabled = function () {
     return $gameMessage.textFieldAllowEmpty() ? true : this._textField.value.length > 0;
 };
 
+Window_TextField.prototype.isOkTriggered = function() {
+    return Input.isTriggered('ok');
+};
+
 Window_TextField.prototype.isCancelEnabled = function () {
     return $gameMessage.textFieldAllowCancel();
 };
@@ -660,14 +664,13 @@ Scene_NameKeyboard.prototype.start = function () {
         this.on("removed", this._onRemoved, this);
         this.createTextFieldElement();
         this.updateTextField();
-    }
+    };
 
     Window_Base.prototype.createTextFieldElement = function () {
         this._textField = document.createElement("input");
         this._textField.tabIndex = -1;
         this._textField.className = "textField";
         this._textField.dataset.fontScale = "1";
-        this._textField.dataset.prePress = String(Input.isPressed("ok"));
         this._textField.style.textAlign = TextField.textAlign;
         this._textField.addEventListener("blur", this._onTextFieldLostFocus.bind(this));
         this._textField.addEventListener("keydown", this._onTextFieldKeyDown.bind(this));
@@ -701,22 +704,24 @@ Scene_NameKeyboard.prototype.start = function () {
         if (!event.code.match(/F\d+/)) {
             event.stopPropagation();
         }
-        if (this._textField.dataset.composing === "true") {
-            this._textField.dataset.composed = "true";
+        if (event.repeat) {
+            this._textField.dataset.repeated = "true";
+        } else {
+            this._textField.dataset.composed = "false";
         }
     };
 
     Window_Base.prototype._onTextFieldCompositionStart = function (event) {
-        this._textField.dataset.composing = "true";
+        // override
     };
 
     Window_Base.prototype._onTextFieldCompositionEnd = function (event) {
-        this._textField.dataset.composing = "false";
+        this._textField.dataset.composed = "true";
     };
 
     Window_Base.prototype._onTextFieldKeyUp = function (event) {
         const dataset = this._textField.dataset;
-        if (this.active && dataset.prePress !== "true" && dataset.composing !== "true" && dataset.composed !== "true") {
+        if (this.active && dataset.repeated !== "true" && dataset.composed !== "true") {
             switch (event.code) {
                 case "Enter":
                     this.onTextFieldOk();
@@ -726,8 +731,7 @@ Scene_NameKeyboard.prototype.start = function () {
                     break;
             }
         }
-        dataset.composed = "false";
-        dataset.prePress = "false";
+        dataset.repeated = "false";
     };
 
     Window_Base.prototype.onTextFieldOk = function () {
@@ -834,7 +838,7 @@ Scene_NameKeyboard.prototype.start = function () {
         if (this._textField) {
             this._textField.disabled = false;
             this._textField.focus();
-            this._textField.dataset.prePress = String(Input.isPressed("ok"));
+            this._textField.dataset.repeated = String(Input.isPressed("ok"));
         }
     };
 
@@ -844,6 +848,7 @@ Scene_NameKeyboard.prototype.start = function () {
         if (this._textField) {
             this._textField.setSelectionRange(-1, -1);
             this._textField.disabled = true;
+            this._textField.blur();
         }
     };
 
@@ -984,6 +989,7 @@ Scene_NameKeyboard.prototype.start = function () {
         return this.isTextField() || _Game_Message_isBusy.call(this);
     };
 
+    // Show Text
     const _Game_Interpreter_command101 = Game_Interpreter.prototype.command101;
     Game_Interpreter.prototype.command101 = function (params) {
         const isBusy = $gameMessage.isBusy();
