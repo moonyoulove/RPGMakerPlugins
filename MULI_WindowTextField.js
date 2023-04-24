@@ -2,7 +2,7 @@
 // MULI_WindowTextField.js
 //-----===================================================================-----
 
-/*:
+/*:zh_TW
  * @target MV MZ
  * @plugindesc 仿原生文字框輸入，運用透明<input>
  * @author moonyoulove
@@ -10,7 +10,7 @@
  *
  * @help
  * 插件命令:
- * TextField input 5 1 true true // 參數依序為最大字數、變量ID、
+ * MULI.TextField input 5 1 true true // 參數依序為最大字數、變量ID、
  * 允許空白和允許取消，變量的內容會做為預設文字。
  * 
  * 名稱輸入處理指令，會判斷最近一次的輸入操作是鼠標鍵盤還是搖桿，
@@ -208,54 +208,242 @@
  * @desc 最後操作裝置非搖桿時，將字符表隱藏
  * @default false
  * @type boolean
+ */
+
+/*:zh_CN
+ * @target MV MZ
+ * @plugindesc 仿原生文字框输入，运用透明<input>
+ * @author moonyoulove
+ * @url https://github.com/moonyoulove/RPGMakerPlugins/blob/main/MULI_WindowTextField.js
+ *
+ * @help
+ * 插件命令:
+ * MULI.TextField input 5 1 true true // 参数依序为最大字数、变量ID、
+ * 允许空白和允许取消，变量的内容会做为预设文字。
  * 
- * @base_
- * @orderAfter
- * @orderBefore
- *
- * @requiredAssets
- *
- * @noteParam
- * @noteRequire 1
- * @noteDir
- * @noteType file
- * @noteData
- */
-
-/*~struct~:
- * @param
- * @text
+ * 名称输入处理指令，会判断最近一次的输入操作是鼠标键盘还是摇杆，
+ * 来启用与禁用键盘输入，原本的字符表也会随之禁用或启用。
+ * 
+ * @command input
+ * @text 输入文字
  * @desc
- * @default
+ *
+ * @arg maxLength
+ * @text 最大长度
+ * @desc
+ * @default -1
+ * @type number
+ * @min -1
+ * 
+ * @arg variableId
+ * @text 变量ID
+ * @desc
+ * @default 0
+ * @type number
+ * @min 0
+ * 
+ * @arg allowEmpty
+ * @text 允许留空
+ * @desc
+ * @default false
+ * @type boolean
+ * 
+ * @arg allowCancel
+ * @text 允许取消
+ * @desc
+ * @default false
+ * @type boolean
+ * 
+ * @param window
+ * @text -----视窗-----
+ *
+ * @param defaultWidth
+ * @parent window
+ * @text 预设宽度
+ * @desc 没有设最大字数时的预设宽度
+ * @default 480
+ * @type number
+ * 
+ * @param minWidth
+ * @parent window
+ * @text 最小宽度
+ * @desc 设有最大字数时自动适应的最小宽度，0=无限制
+ * @default 240
+ * @type number
+ * @min 0
+ * 
+ * @param maxWidth
+ * @parent window
+ * @text 最大宽度
+ * @desc 设有最大字数时自动适应的最大宽度，0=游戏宽度
+ * @default 0
+ * @type number
+ * @min 0
+ * 
+ * @param windowHeight
+ * @parent window
+ * @text 视窗高度
+ * @desc 0=自动适应一个行高
+ * @default 0
+ * @type number
+ * @min 0
+ * 
+ * @param textField
+ * @text -----文字框-----
+ * 
+ * @param textFieldY
+ * @parent textField
+ * @text 文字框y座标
+ * @desc 视窗内文字框的位置，对齐为"none"时才有效
+ * @default 0
+ * @type number
+ * 
+ * @param textFieldAlign
+ * @parent textField
+ * @text 文字框y座标对齐
+ * @desc 
+ * @default center
+ * @type select
+ * @option 靠上
+ * @value top
+ * @option 置中
+ * @value center
+ * @option 靠下
+ * @value bottom
+ * @option 无
+ * @value none
+ * 
+ * @param button
+ * @text -----按钮-----
+ * 
+ * @param buttonImage
+ * @parent button
+ * @text 按钮图片
+ * @desc MV可以使用TextFieldButton.png，MZ可以留空使用预设图片
+ * @default TextFieldButton
+ * @type file
+ * @dir img/system
+ * @require 1
+ * 
+ * @param buttonHeight
+ * @parent button
+ * @text 按钮高度
+ * @desc 
+ * @default 48
+ * @type number
+ * @min 1
+ * 
+ * @param buttonAlign
+ * @parent button
+ * @text 按钮水平对齐
+ * @desc 相对于视窗的位置
+ * @default center
+ * @type select
+ * @option 靠左
+ * @value left
+ * @option 置中
+ * @value center
+ * @option 靠右
+ * @value  right
+ * 
+ * @param buttonCancel
+ * @parent button
+ * @text -----取消按钮-----
+ * 
+ * @param buttonCancelX
+ * @parent buttonCancel
+ * @text 取消按钮在图片里的X座标
+ * @desc 
+ * @default 0
+ * @type number
+ * 
+ * @param buttonCancelWidth
+ * @parent buttonCancel
+ * @text 取消按钮的宽度
+ * @desc 
+ * @default 96
+ * @type number
+ * @min 1
+ * 
+ * @param buttonOk
+ * @parent button
+ * @text -----确认按钮-----
+ * 
+ * @param buttonOkX
+ * @parent buttonOk
+ * @text 确认按钮在图片里的X座标
+ * @desc 
+ * @default 96
+ * @type number
+ * 
+ * @param buttonOkWidth
+ * @parent buttonOk
+ * @text 确认按钮的宽度
+ * @desc 
+ * @default 96
+ * @type number
+ * @min 1
+ * 
+ * @param text
+ * @text -----文字-----
+ * 
+ * @param selectionColor
+ * @parent text
+ * @text 反白颜色
+ * @desc 留空则自动检测视窗指标的图片颜色
+ * @default 
  * @type string
+ * 
+ * @param textAlign
+ * @parent text
+ * @text 文字水平对齐
+ * @desc 文字框内文字水平对齐
+ * @default left
+ * @type select
+ * @option 靠左
+ * @value left
+ * @option 置中
+ * @value center
+ * @option 靠右
+ * @value  right
+ * 
+ * @param nameEdit
+ * @text -----更改名字-----
+ *
+ * @param hideTable
+ * @parent nameEdit
+ * @text 隐藏字符输入表
+ * @desc 最后操作装置非摇杆时，将字符表隐藏
+ * @default false
+ * @type boolean
  */
 
-class TextField { }
-
-TextField.pluginName = "MULI_WindowTextField";
-TextField.parameters = PluginManager.parameters("MULI_WindowTextField");
-TextField.commands = {
+var MULI = MULI || {};
+MULI.TextField = class { };
+MULI.TextField.pluginName = "MULI_WindowTextField";
+MULI.TextField.parameters = PluginManager.parameters("MULI_WindowTextField");
+MULI.TextField.commands = {
     input(maxLength, variableId, allowEmpty, allowCancel) {
         $gameMessage.setTextField(maxLength, variableId, allowEmpty, allowCancel);
         this.setWaitMode("message");
     }
 };
-TextField.defaultWidth = Number(TextField.parameters.defaultWidth);
-TextField.minWidth = Number(TextField.parameters.minWidth);
-TextField.maxWidth = Number(TextField.parameters.maxWidth);
-TextField.windowHeight = Number(TextField.parameters.windowHeight);
-TextField.textFieldY = Number(TextField.parameters.textFieldY);
-TextField.textFieldAlign = TextField.parameters.textFieldAlign;
-TextField.textAlign = TextField.parameters.textAlign;
-TextField.selectionColor = TextField.parameters.selectionColor;
-TextField.buttonImage = TextField.parameters.buttonImage;
-TextField.buttonHeight = Number(TextField.parameters.buttonHeight);
-TextField.buttonAlign = TextField.parameters.buttonAlign;
-TextField.buttonCancelX = Number(TextField.parameters.buttonCancelX);
-TextField.buttonCancelWidth = Number(TextField.parameters.buttonCancelWidth);
-TextField.buttonOkX = Number(TextField.parameters.buttonOkX);
-TextField.buttonOkWidth = Number(TextField.parameters.buttonOkWidth);
-TextField.hideTable = TextField.parameters.hideTable === "true";
+MULI.TextField.defaultWidth = Number(MULI.TextField.parameters.defaultWidth);
+MULI.TextField.minWidth = Number(MULI.TextField.parameters.minWidth);
+MULI.TextField.maxWidth = Number(MULI.TextField.parameters.maxWidth);
+MULI.TextField.windowHeight = Number(MULI.TextField.parameters.windowHeight);
+MULI.TextField.textFieldY = Number(MULI.TextField.parameters.textFieldY);
+MULI.TextField.textFieldAlign = MULI.TextField.parameters.textFieldAlign;
+MULI.TextField.textAlign = MULI.TextField.parameters.textAlign;
+MULI.TextField.selectionColor = MULI.TextField.parameters.selectionColor;
+MULI.TextField.buttonImage = MULI.TextField.parameters.buttonImage;
+MULI.TextField.buttonHeight = Number(MULI.TextField.parameters.buttonHeight);
+MULI.TextField.buttonAlign = MULI.TextField.parameters.buttonAlign;
+MULI.TextField.buttonCancelX = Number(MULI.TextField.parameters.buttonCancelX);
+MULI.TextField.buttonCancelWidth = Number(MULI.TextField.parameters.buttonCancelWidth);
+MULI.TextField.buttonOkX = Number(MULI.TextField.parameters.buttonOkX);
+MULI.TextField.buttonOkWidth = Number(MULI.TextField.parameters.buttonOkWidth);
+MULI.TextField.hideTable = MULI.TextField.parameters.hideTable === "true";
 
 if (Utils.RPGMAKER_NAME === "MV") {
     function Window_StatusBase() {
@@ -314,14 +502,14 @@ Window_TextField.prototype.windowWidth = function () {
         const textWidth = this.textWidth("永") * Math.min(maxLength, 5);
         const lengthWidth = this.textWidth("0") * (maxLength.toString().length * 2 + 1);
         const totalWidth = textWidth + lengthWidth + this.padding * 2;
-        return totalWidth.clamp(TextField.minWidth, TextField.maxWidth || Graphics.boxWidth);
+        return totalWidth.clamp(MULI.TextField.minWidth, MULI.TextField.maxWidth || Graphics.boxWidth);
     } else {
-        return TextField.defaultWidth;
+        return MULI.TextField.defaultWidth;
     }
 };
 
 Window_TextField.prototype.windowHeight = function () {
-    return TextField.windowHeight || this.fittingHeight(1);
+    return MULI.TextField.windowHeight || this.fittingHeight(1);
 };
 
 Window_TextField.prototype.updatePlacement = function () {
@@ -355,15 +543,15 @@ Window_TextField.prototype.updateButtonsVisiblity = function () {
 };
 
 Window_TextField.prototype.createButtons = function () {
-    const bitmap = TextField.buttonImage ? ImageManager.loadSystem(TextField.buttonImage) : null;
-    const buttonHeight = TextField.buttonHeight;
+    const bitmap = MULI.TextField.buttonImage ? ImageManager.loadSystem(MULI.TextField.buttonImage) : null;
+    const buttonHeight = MULI.TextField.buttonHeight;
     this._buttons = [];
     for (let i = 0; i < 2; i++) {
         // @rmmz
         const button = new Sprite_Button(["cancel", "ok"][i]);
         if (bitmap) {
-            const x = [TextField.buttonCancelX, TextField.buttonOkX][i];
-            const buttonWidth = [TextField.buttonCancelWidth, TextField.buttonOkWidth][i];
+            const x = [MULI.TextField.buttonCancelX, MULI.TextField.buttonOkX][i];
+            const buttonWidth = [MULI.TextField.buttonCancelWidth, MULI.TextField.buttonOkWidth][i];
             button.bitmap = bitmap;
             button.setColdFrame(x, 0, buttonWidth, buttonHeight);
             button.setHotFrame(x, buttonHeight, buttonWidth, buttonHeight);
@@ -384,7 +572,7 @@ Window_TextField.prototype.placeButtons = function () {
         totalWidth += this._buttons[i].width + spacing;
     }
     let x = 0;
-    switch (TextField.buttonAlign) {
+    switch (MULI.TextField.buttonAlign) {
         case "left":
             x = 0;
             break;
@@ -419,7 +607,7 @@ Window_TextField.prototype.isOkEnabled = function () {
     return $gameMessage.textFieldAllowEmpty() ? true : this._textField.value.length > 0;
 };
 
-Window_TextField.prototype.isOkTriggered = function() {
+Window_TextField.prototype.isOkTriggered = function () {
     return Input.isTriggered('ok');
 };
 
@@ -473,7 +661,6 @@ Window_NameTextField.prototype = Object.create(Window_NameEdit.prototype);
 Window_NameTextField.prototype.constructor = Window_NameTextField;
 
 Window_NameTextField.prototype.initialize = function (...args) {
-    Window_NameEdit = TextField.Window_NameEdit || Window_NameEdit;
     // @rmmz mv:[actor, maxLength] mz:[rect]
     Window_NameEdit.prototype.initialize.apply(this, args);
     this._isKeyboardInput = true;
@@ -560,14 +747,13 @@ Scene_NameKeyboard.prototype.initialize = function () {
 
 Scene_NameKeyboard.prototype.createEditWindow = function () {
     // 替換
-    const temp = Window_NameEdit;
     Window_NameEdit = new Proxy(Window_NameEdit, {
         construct(target, args, newTarget) {
+            Window_NameEdit = target;
             return new Window_NameTextField(...args);
         }
     });
     Scene_Name.prototype.createEditWindow.call(this);
-    Window_NameEdit = temp;
 };
 
 Scene_NameKeyboard.prototype.createInputWindow = function () {
@@ -583,7 +769,7 @@ Scene_NameKeyboard.prototype.start = function () {
     } else {
         this._inputWindow.deselect();
         this._inputWindow.deactivate();
-        if (TextField.hideTable) {
+        if (MULI.TextField.hideTable) {
             this._inputWindow.hide();
             this._editWindow.y = (Graphics.boxHeight - this._editWindow.height) / 2;
             this._editWindow.updateTextFieldPosition();
@@ -607,8 +793,8 @@ Scene_NameKeyboard.prototype.start = function () {
             configurable: true
         });
     } else {
-        PluginManager.registerCommand(TextField.pluginName, "input", function (args) {
-            TextField.commands.input.call(this, Number(args.maxLength), Number(args.variableId), args.allowEmpty === "true", args.allowCancel === "true");
+        PluginManager.registerCommand(MULI.TextField.pluginName, "input", function (args) {
+            MULI.TextField.commands.input.call(this, Number(args.maxLength), Number(args.variableId), args.allowEmpty === "true", args.allowCancel === "true");
         });
 
         Window_Base.prototype.canvasToLocalX = function (x) {
@@ -669,9 +855,9 @@ Scene_NameKeyboard.prototype.start = function () {
     Window_Base.prototype.createTextFieldElement = function () {
         this._textField = document.createElement("input");
         this._textField.tabIndex = -1;
-        this._textField.className = "textField";
+        this._textField.className = "text-field";
         this._textField.dataset.fontScale = "1";
-        this._textField.style.textAlign = TextField.textAlign;
+        this._textField.style.textAlign = MULI.TextField.textAlign;
         this._textField.addEventListener("blur", this._onTextFieldLostFocus.bind(this));
         this._textField.addEventListener("keydown", this._onTextFieldKeyDown.bind(this));
         this._textField.addEventListener("input", this._onTextFieldInput.bind(this));
@@ -754,7 +940,7 @@ Scene_NameKeyboard.prototype.start = function () {
         this._textField.style.caretColor = this.contents.textColor;
         this._textField.style.fontFamily = this.contents.fontFace;
         this.updateTextFieldFontSize();
-        const color = TextField.selectionColor || this.cursorColor();
+        const color = MULI.TextField.selectionColor || this.cursorColor();
         this._textField.style.setProperty("--textField-selection-color", color);
     };
 
@@ -856,7 +1042,7 @@ Scene_NameKeyboard.prototype.start = function () {
         const x = 0;
         const height = this.lineHeight();
         let y = 0;
-        switch (TextField.textFieldAlign) {
+        switch (MULI.TextField.textFieldAlign) {
             case "top":
                 y = 0;
                 break;
@@ -867,7 +1053,7 @@ Scene_NameKeyboard.prototype.start = function () {
                 y = this.innerHeight - height;
                 break;
             case "none":
-                y = TextField.textFieldY;
+                y = MULI.TextField.textFieldY;
                 break;
         }
         const width = this.innerWidth;
@@ -1010,24 +1196,28 @@ Scene_NameKeyboard.prototype.start = function () {
         return false;
     };
 
+    // Name Input Processing
+    const _Game_Interpreter_command303 = Game_Interpreter.prototype.command303;
+    Game_Interpreter.prototype.command303 = function () {
+        Scene_Name = new Proxy(Scene_Name, {
+            construct(target, args, newTarget) {
+                Scene_Name = target;
+                return new Scene_NameKeyboard(...args);
+            }
+        });
+        return _Game_Interpreter_command303.call(this);
+    };
+
     const _Game_Interpreter_pluginCommand = Game_Interpreter.prototype.pluginCommand;
     Game_Interpreter.prototype.pluginCommand = function (command, args) {
         _Game_Interpreter_pluginCommand.call(this, command, args);
         if (command === "TextField") {
             switch (args[0]) {
                 case "input":
-                    TextField.commands.input.call(this, Number(args[1]), Number(args[2]), Boolean(args[3]), Boolean(args[4]));
+                    MULI.TextField.commands.input.call(this, Number(args[1]), Number(args[2]), Boolean(args[3]), Boolean(args[4]));
                     break;
             }
         }
-    };
-
-    const _SceneManager_push = SceneManager.push;
-    SceneManager.push = function (sceneClass) {
-        if (sceneClass === Scene_Name) {
-            sceneClass = Scene_NameKeyboard;
-        }
-        _SceneManager_push.call(this, sceneClass);
     };
 
     const _SceneManager_catchException = SceneManager.catchException;
@@ -1152,7 +1342,7 @@ Scene_NameKeyboard.prototype.start = function () {
     const style = document.createElement("style");
     document.head.appendChild(style);
     style.sheet.insertRule(`
-.textField {
+.text-field {
     position: absolute;
     z-index: 4;
     margin: 0;
@@ -1163,7 +1353,7 @@ Scene_NameKeyboard.prototype.start = function () {
     color: #00000000;
 }`);
     style.sheet.insertRule(`
-.textField::selection {
+.text-field::selection {
     background: var(--textField-selection-color);
 }`);
 })();
