@@ -218,7 +218,7 @@
  *
  * @help
  * 插件命令:
- * MULI.TextField input 5 1 true true // 参数依序为最大字数、变量ID、
+ * TextField input 5 1 true true // 参数依序为最大字数、变量ID、
  * 允许空白和允许取消，变量的内容会做为预设文字。
  * 
  * 名称输入处理指令，会判断最近一次的输入操作是鼠标键盘还是摇杆，
