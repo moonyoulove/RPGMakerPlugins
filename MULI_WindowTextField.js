@@ -499,7 +499,7 @@ Window_TextField.prototype.refresh = function () {
 Window_TextField.prototype.windowWidth = function () {
     const maxLength = this._textField.maxLength;
     if (maxLength >= 0) {
-        const textWidth = this.textWidth("永") * Math.min(maxLength, 5);
+        const textWidth = this.textWidth("永") * maxLength;
         const lengthWidth = this.textWidth("0") * (maxLength.toString().length * 2 + 1);
         const totalWidth = textWidth + lengthWidth + this.padding * 2;
         return totalWidth.clamp(MULI.TextField.minWidth, MULI.TextField.maxWidth || Graphics.boxWidth);
