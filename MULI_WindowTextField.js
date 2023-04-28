@@ -10,7 +10,7 @@
  *
  * @help
  * 插件命令:
- * MULI.TextField input 5 1 true true // 參數依序為最大字數、變量ID、
+ * TextField input 5 1 true true // 參數依序為最大字數、變量ID、
  * 允許空白和允許取消，變量的內容會做為預設文字。
  * 
  * 名稱輸入處理指令，會判斷最近一次的輸入操作是鼠標鍵盤還是搖桿，
