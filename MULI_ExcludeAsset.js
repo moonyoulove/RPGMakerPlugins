@@ -22,6 +22,9 @@
  * @desc 要保留的檔案或資料夾
  * @type text[]
  *
+ * @base MULI_PluginBase
+ * @orderAfter MULI_PluginBase
+ *
  * ===========GENERATE START===========
  * ============GENERATE END============
  */
@@ -39,7 +42,7 @@ if (PluginManager.hasPlugin("PH_QuestBook.js")) {
     }
 }
 MULI.ExcludeAsset.readAllFile = function(path) {
-    const fs = require("fs");
+    const fs = nw.require("fs");
     const pathlib = require("path");
     const files = [];
     read(path, files);
@@ -58,7 +61,7 @@ MULI.ExcludeAsset.readAllFile = function(path) {
     }
 };
 MULI.ExcludeAsset.makeRequiredAssets = function() {
-    const fs = require("fs");
+    const fs = nw.require("fs");
     const files = [];
     MULI.ExcludeAsset.requiredAssets.forEach((path) => {
         files.push(...MULI.ExcludeAsset.readAllFile(path));
