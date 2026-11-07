@@ -10,6 +10,8 @@
  *
  * @help
  *
+ * @base MULI_PluginBase
+ * @orderAfter MULI_PluginBase
  */
 
 var MULI = MULI || {};
