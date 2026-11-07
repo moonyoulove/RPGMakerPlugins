@@ -1,22 +1,28 @@
 RPG Maker Plugins 授權條款
 
-版權所有 (c) 2024 moonyoulove
+版權所有 (c) 2026 moonyoulove
 
-1. 本內容允許在任何類型的商業遊戲中使用。
-2. 不允許單獨出售此內容，或與其他類似內容捆綁銷售。
-3. 使用者在作品中不需要註明本內容原作者。
-4. 使用者可以在不通知原作者的情況下與他人分享此內容。
-5. 使用者可以修改和重新分發此內容，但必須註明原作者（任何地方和形式皆可）。
+1. 本內容允許整合至任何商業或非商業之最終成品（包含各式遊戲、應用程式或軟體）中發布與銷售。
+2. 使用者在上述最終成品中，不需要註明本內容原作者。
+3. 嚴禁將本內容之原始檔案、程式碼、或其任何修改與衍生版本（如魔改插件、修改後的圖片等），進行單獨出售、轉授權、或與其他素材捆綁銷售。本內容僅允許作為成品之非核心組件隨成品發布。
+4. 使用者可以在不通知原作者的情況下，免費與他人分享、修改本內容。但若重新分發本內容之原始檔案或修改後之程式碼/素材本身，必須在檔案或分發管道中註明原作者。
+5. 免責聲明：本內容依「現狀」提供，原作者不對使用本內容所造成的任何直接或間接損害、商業損失承擔任何法律與賠償責任。若使用者違反本條款之任何規定，本授權將立即自動終止。
+
+---
+【修訂說明】本版本針對 2024 舊版進行精簡升級：(1) 放寬適用範圍至非遊戲軟體；(2) 嚴格禁止任何魔改版、衍生版的轉賣行為；(3) 依國際慣例補齊免責與違約終止條款，防範法律漏洞。
 
 
 English Version:
 
 RPG Maker Plugins License Agreement
 
-Copyright (c) 2024 moonyoulove
+Copyright (c) 2026 moonyoulove
 
-1. This content allows use in any genre of commercial games.
-2. It is not permitted to sell this content separately or bundled with other similar content.
-3. Users are not required to credit the original author in their work.
-4. Users are allowed to share this content with others without notifying the original author.
-5. Users may modify and redistribute this content, but must include attribution to the original author (in any form or location).
+1. This Content may be integrated and used in any commercial or non-commercial final products, including but not limited to games, applications, or software.
+2. Users are not required to credit the original author within the aforementioned final products.
+3. It is strictly prohibited to sell, sublicense, or bundle for sale this Content, its source code, assets, or any modified or derivative versions thereof (e.g., modified plugins, altered graphics). This Content may only be distributed as a non-primary component integrated within a final product.
+4. Users are permitted to share and modify this Content free of charge without notifying the original author. However, any redistribution of the Content itself, its source code, or its modified versions must include clear attribution to the original author.
+5. DISCLAIMER: THIS CONTENT IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY. ANY VIOLATION OF THIS AGREEMENT WILL RESULT IN THE IMMEDIATE AND AUTOMATIC TERMINATION OF THIS LICENSE.
+
+---
+[Revision Note] Upgraded from the 2024 version to: (1) Expand applicability to non-game software; (2) Strictly prohibit the resale of any modified or derivative versions; (3) Incorporate standard legal disclaimers and automatic termination clauses to eliminate loopholes.
